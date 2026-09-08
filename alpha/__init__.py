@@ -54,6 +54,14 @@ from .ml_model import (
     FactorSelector,
 )
 
+from .alpha158 import Alpha158, calculate_alpha158
+
+from .deep_model import (
+    LSTMModel,
+    GRUModel,
+    TransformerModel,
+)
+
 __all__ = [
     # 因子
     'BaseFactor', 'FactorCalculator',
@@ -66,7 +74,13 @@ __all__ = [
     'MOMENTUM_FACTORS', 'VOLATILITY_FACTORS', 'VOLUME_FACTORS', 
     'TREND_FACTORS', 'ALL_FACTORS',
     
-    # 模型
+    # Alpha158 (Qlib)
+    'Alpha158', 'calculate_alpha158',
+    
+    # 传统机器学习模型
     'BaseMLModel', 'LinearModel', 'LightGBMModel', 'XGBoostModel',
     'RandomForestModel', 'EnsembleModel', 'ModelTrainer', 'FactorSelector',
+    
+    # 深度学习模型
+    'LSTMModel', 'GRUModel', 'TransformerModel',
 ]
