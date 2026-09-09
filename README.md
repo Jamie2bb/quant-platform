@@ -1,4 +1,4 @@
-# A股量化回测平台 v2.0
+# A股量化回测平台 v2.1
 
 基于 AKShare 的完整量化交易回测框架，参考 **Backtrader**、**VnPy**、**Qlib** 三大顶级开源项目设计。
 
@@ -11,6 +11,7 @@ quant/
 ├── backtest/       # 回测引擎
 │   ├── engine.py       # 基础回测引擎
 │   ├── cerebro.py      # Cerebro 高级引擎（参考 Backtrader）
+│   ├── portfolio.py    # 🆕 组合回测引擎（多股票持仓）
 │   ├── analyzers.py    # 分析器（夏普、索提诺、回撤等）
 │   └── sizers.py       # 仓位管理（固定、百分比、凯利、ATR等）
 ├── alpha/          # AI 因子库（参考 Qlib）
@@ -21,6 +22,11 @@ quant/
 ├── optimizer/      # 参数优化（网格搜索/遗传算法）
 ├── screener/       # 选股筛选器
 ├── monitor/        # 实盘监控与信号提醒
+├── simulator/      # 🆕 模拟交易系统
+│   └── paper_trading.py # 模拟下单、持仓管理
+├── report/         # 🆕 报告生成
+│   ├── daily_review.py  # 每日复盘（文本+HTML）
+│   └── factor_report.py # 因子分析（IC/IR/分组收益）
 ├── utils/          # 技术指标工具
 ├── web/            # Web可视化界面（Streamlit）
 └── examples/       # 示例脚本
@@ -53,33 +59,133 @@ result.summary()
 result.plot()
 ```
 
-### 2. Cerebro 高级回测（类 Backtrader 风格）
+### 2. 🆕 组合回测（多股票持仓）
+
+```python
+from backtest import PortfolioBacktest, run_portfolio_backtest
+
+# 快速运行（等权重，月度再平衡）
+result = run_portfolio_backtest(
+    symbols=["600519", "000858", "000333", "600036", "601318"],
+    start_date="20230101",
+    end_date="20240101",
+    initial_capital=1000000,
+    rebalance_freq="monthly"
+)
+result.summary()
+result.plot(save_path="portfolio.png")
+
+# 自定义权重
+engine = PortfolioBacktest(
+    symbols=["600519", "000858", "000333"],
+    start_date="20230101",
+    end_date="20240101",
+    initial_capital=1000000
+)
+engine.load_data()
+engine.set_weights({"600519": 0.5, "000858": 0.3, "000333": 0.2})
+result = engine.run(rebalance_freq="quarterly")
+```
+
+### 3. 🆕 模拟交易
+
+```python
+from simulator import PaperTrader
+
+# 创建模拟交易器
+trader = PaperTrader(initial_cash=1000000)
+
+# 买入
+order = trader.buy("000001", 1000)  # 市价买入1000股
+order = trader.buy("600519", 100, price=1800)  # 限价买入
+
+# 卖出
+trader.sell("000001", 500)  # 卖出500股
+trader.sell_all("600519")   # 清仓
+
+# 查看账户
+trader.summary()
+
+# 查看持仓
+positions = trader.get_all_positions()
+
+# 查看交易记录
+trades = trader.get_trade_history()
+
+# 状态会自动保存，下次运行自动恢复
+trader.reset()  # 重置账户
+```
+
+### 4. 🆕 每日复盘
+
+```python
+from report import DailyReview
+
+# 生成今日复盘
+review = DailyReview()
+
+# 文本报告
+print(review.generate_report())
+
+# HTML报告（可视化）
+review.generate_html_report("daily_review.html")
+
+# 获取各项数据
+top_gainers = review.get_top_gainers(20)    # 涨幅榜
+top_losers = review.get_top_losers(20)      # 跌幅榜
+hot_industries = review.get_hot_industries() # 热门行业
+unusual = review.find_unusual_stocks()       # 异动股
+```
+
+### 5. 🆕 因子分析
+
+```python
+from report import FactorAnalyzer
+import pandas as pd
+
+# 准备数据
+factor_df = pd.DataFrame({
+    "momentum": momentum_values,
+    "volatility": volatility_values
+}, index=dates)
+returns = price_series.pct_change()
+
+# 创建分析器
+analyzer = FactorAnalyzer(factor_df, returns)
+
+# IC 分析
+ic = analyzer.calculate_ic("momentum")
+ir = analyzer.calculate_ir("momentum")
+
+# 分组收益
+group_return = analyzer.factor_group_return("momentum", n_groups=5)
+
+# 因子衰减
+decay = analyzer.factor_decay("momentum", max_lag=20)
+
+# 因子相关性
+corr = analyzer.factor_correlation()
+
+# 完整报告
+analyzer.print_report("momentum")
+```
+
+### 6. Cerebro 高级回测（类 Backtrader 风格）
 
 ```python
 from backtest import Cerebro
 from strategy import MACDStrategy
 
-# 创建引擎
 cerebro = Cerebro(cash=100000, commission=0.0003)
-
-# 添加数据
 cerebro.add_data(data)
-
-# 添加策略
 cerebro.add_strategy(MACDStrategy(12, 26, 9))
-
-# 设置仓位管理
 cerebro.set_sizer("risk_percent", risk_percent=0.02, stop_loss_pct=0.05)
 
-# 运行回测
 result = cerebro.run()
 result.summary()
-
-# 查看详细指标
-print(result.metrics)
 ```
 
-### 3. 仓位管理器
+### 7. 仓位管理器
 
 ```python
 from backtest import create_sizer
@@ -106,89 +212,76 @@ sizer = create_sizer("kelly", win_rate=0.55, profit_loss_ratio=1.5, fraction=0.5
 sizer = create_sizer("volatility_target", target_volatility=0.15)
 ```
 
-### 4. Alpha 因子计算
+### 8. Alpha 因子计算
 
 ```python
 from alpha import FactorCalculator, MomentumFactor, VolatilityFactor
 
-# 创建因子计算器
 calc = FactorCalculator()
-calc.add_all_basic_factors()  # 添加 20+ 基础因子
-
-# 计算因子
+calc.add_all_basic_factors()
 factors = calc.calculate(data)
-print(factors.head())
-
-# 单个因子
-momentum = MomentumFactor(20).calculate(data)
 ```
 
-### 5. 机器学习选股
+### 9. 机器学习选股
 
 ```python
 from alpha import RandomForestModel, FactorCalculator, FactorSelector
 
-# 计算因子
 calc = FactorCalculator()
 calc.add_all_basic_factors()
 factors = calc.calculate(data)
 
-# 构建目标变量（下期收益）
 returns = data["close"].pct_change().shift(-1)
 
-# 因子选择
 selector = FactorSelector(top_k=10)
 best_factors = selector.select_by_ic(factors, returns)
-print(selector.get_report())
 
-# 训练模型
 model = RandomForestModel(n_estimators=100)
 model.fit(factors[best_factors], returns)
-
-# 预测
 predictions = model.predict(factors[best_factors])
 ```
 
-### 6. 风险管理
+### 10. 风险管理
 
 ```python
 from risk import RiskManager, RiskLimits
 
-# 配置风险限制
 limits = RiskLimits(
-    max_order_value=100000,      # 单笔最大金额
-    max_position_pct=0.25,       # 单只股票最大仓位
-    max_daily_trades=50,         # 日最大交易次数
-    max_daily_loss=0.05,         # 日最大亏损
-    max_drawdown=0.20,           # 最大回撤限制
+    max_order_value=100000,
+    max_position_pct=0.25,
+    max_daily_trades=50,
+    max_daily_loss=0.05,
+    max_drawdown=0.20,
 )
 
-# 创建风险管理器
 risk_mgr = RiskManager(limits)
 risk_mgr.initialize(equity=100000)
 
-# 检查订单
-is_allowed, reason, adjusted_size = risk_mgr.check_order(
-    symbol="000001", 
-    price=10.5, 
-    size=1000
-)
-
-if is_allowed:
-    # 执行交易...
-    risk_mgr.record_trade("000001", 10.5, adjusted_size, "buy")
-
-# 查看风险摘要
-print(risk_mgr.get_risk_summary())
+is_allowed, reason, adjusted_size = risk_mgr.check_order("000001", 10.5, 1000)
 ```
 
-### 7. Web 界面
+### 11. Web 界面
 
 ```bash
-streamlit run web/app.py
+streamlit run web/app.py --server.headless true
 ```
 
 浏览器打开 http://localhost:8501
+
+---
+
+## 示例脚本
+
+| 脚本 | 说明 |
+|------|------|
+| `examples/quick_start.py` | 快速入门 |
+| `examples/portfolio_demo.py` | 🆕 组合回测示例 |
+| `examples/paper_trading_demo.py` | 🆕 模拟交易示例 |
+| `examples/daily_review_demo.py` | 🆕 每日复盘示例 |
+| `examples/factor_analysis_demo.py` | 🆕 因子分析示例 |
+| `examples/optimizer_demo.py` | 参数优化示例 |
+| `examples/screener_demo.py` | 选股筛选示例 |
+| `examples/realtime_demo.py` | 实时行情示例 |
 
 ---
 
@@ -220,55 +313,38 @@ streamlit run web/app.py
 
 ---
 
-## Alpha 因子库（20+）
+## 新增功能 v2.1 🆕
 
-### 动量因子
-- Momentum（动量）、Reversal（反转）、RS（相对强弱）
+### 1. 组合回测 (Portfolio Backtest)
+- 多股票同时持仓
+- 等权重/自定义权重
+- 定期再平衡（日/周/月/季）
+- 组合绩效分析
+- 持仓历史追踪
 
-### 波动率因子
-- Volatility（波动率）、ATR、VolatilityRatio（波动率比）
+### 2. 模拟交易 (Paper Trading)
+- 市价单/限价单
+- 实时价格获取
+- 持仓管理
+- 账户资金管理
+- 交易记录
+- 状态持久化（自动保存/恢复）
 
-### 成交量因子
-- Volume（量比）、VolumeMA、Amount（成交额）、OBV
+### 3. 每日复盘 (Daily Review)
+- 大盘概况分析
+- 涨跌分布统计
+- 涨跌幅排行榜
+- 热门行业/概念
+- 异动股票识别
+- HTML 可视化报告
 
-### 价格形态因子
-- HighLow（价格位置）、Gap（跳空）、Body（实体）、Shadow（影线）
-
-### 趋势因子
-- Trend、TrendStrength（ADX）、MACD
-
-### 组合因子
-- Quality（质量）、CompositeMomentum（复合动量）
-
----
-
-## 仓位管理器（9种）
-
-| 类型 | 说明 |
-|------|------|
-| `fixed` | 固定股数 |
-| `fixed_amount` | 固定金额 |
-| `percent` | 资金百分比 |
-| `all_in` | 全仓 |
-| `risk_percent` | 风险百分比（基于止损） |
-| `atr` | ATR 波动率仓位（海龟法） |
-| `kelly` | 凯利公式 |
-| `pyramid` | 金字塔加仓 |
-| `volatility_target` | 目标波动率 |
-
----
-
-## 分析器（7种）
-
-| 分析器 | 指标 |
-|--------|------|
-| SharpeRatio | 夏普比率、年化收益、年化波动 |
-| SortinoRatio | 索提诺比率、下行波动率 |
-| CalmarRatio | 卡玛比率 |
-| DrawDown | 最大回撤、回撤持续时间、平均回撤 |
-| Trade | 胜率、盈亏比、期望值、最大连胜/连亏 |
-| TimeReturn | 月度统计、最佳/最差月份 |
-| Risk | VaR、CVaR、偏度、峰度 |
+### 4. 因子分析 (Factor Analysis)
+- IC (Information Coefficient) 计算
+- IR (Information Ratio) 计算
+- 分组收益分析
+- 因子衰减分析
+- 因子相关性矩阵
+- 专业分析报告
 
 ---
 
@@ -283,12 +359,12 @@ streamlit run web/app.py
 | VaR(95%) | 95%置信度下最大日损失 | <3% |
 | 胜率 | 盈利交易占比 | >50% |
 | 盈亏比 | 平均盈利/平均亏损 | >1.5 |
+| IC | 因子与收益的相关性 | >0.03 |
+| IR | IC均值/IC标准差 | >0.5 |
 
 ---
 
 ## 参考项目
-
-本平台参考了以下顶级开源项目：
 
 - **[Backtrader](https://github.com/mementum/backtrader)** - Cerebro 引擎、Analyzer、Sizer 设计
 - **[VnPy](https://github.com/vnpy/vnpy)** - 风控模块、事件驱动架构
@@ -307,3 +383,4 @@ streamlit run web/app.py
 2. 历史回测表现不代表未来收益
 3. 网络不稳定时数据获取可能失败，会自动重试
 4. 机器学习模块需要额外安装 `scikit-learn`、`lightgbm`、`xgboost`
+5. 模拟交易状态保存在 `simulator/data/` 目录

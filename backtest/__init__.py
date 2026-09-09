@@ -12,6 +12,7 @@ from .sizers import (
     RiskPercentSizer, ATRSizer, KellySizer, PyramidSizer, VolatilityTargetSizer,
     create_sizer
 )
+from .portfolio import PortfolioBacktest, PortfolioResult, run_portfolio_backtest
 
 __all__ = [
     # 原有引擎
@@ -19,6 +20,9 @@ __all__ = [
     
     # Cerebro 引擎
     'Cerebro', 'Broker', 'BrokerConfig', 'CerebroResult',
+    
+    # 组合回测
+    'PortfolioBacktest', 'PortfolioResult', 'run_portfolio_backtest',
     
     # 分析器
     'AnalyzerSuite', 'TradeRecord',

@@ -1,0 +1,46 @@
+{
+  "account": {
+    "total_cash": 988253.27,
+    "available_cash": 988253.27,
+    "frozen_cash": 0.0
+  },
+  "positions": {
+    "000001": {
+      "symbol": "000001",
+      "quantity": 1000,
+      "cost_price": 11.741729999999999,
+      "frozen": 0
+    }
+  },
+  "orders": {
+    "ORD202609090941020001": {
+      "order_id": "ORD202609090941020001",
+      "symbol": "000001",
+      "side": "buy",
+      "order_type": "market",
+      "quantity": 1000,
+      "price": 11.73,
+      "stop_price": 0,
+      "filled_quantity": 1000,
+      "filled_price": 11.741729999999999,
+      "status": "filled",
+      "create_time": "2026-09-09 09:41:02",
+      "update_time": "2026-09-09 09:41:02",
+      "note": "测试买入"
+    }
+  },
+  "order_counter": 1,
+  "trade_history": [
+    {
+      "time": "2026-09-09 09:41:02",
+      "order_id": "ORD202609090941020001",
+      "symbol": "000001",
+      "side": "buy",
+      "quantity": 1000,
+      "price": 11.741729999999999,
+      "commission": 5.0,
+      "amount": 11741.73,
+      "note": "测试买入"
+    }
+  ]
+}
