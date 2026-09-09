@@ -132,145 +132,179 @@ st.sidebar.subheader("策略参数")
 
 # ===== 均线类 =====
 if strategy_name == "双均线交叉":
+    # MACrossStrategy(short_period, long_period)
     short_period = st.sidebar.slider("短期均线", 3, 30, 5)
     long_period = st.sidebar.slider("长期均线", 10, 120, 20)
     strategy = MACrossStrategy(short_period, long_period)
 
 elif strategy_name == "三均线策略":
+    # TripleMAStrategy(short, mid, long)
     short = st.sidebar.slider("短期", 3, 20, 5)
     mid = st.sidebar.slider("中期", 5, 30, 10)
     long = st.sidebar.slider("长期", 10, 60, 20)
     strategy = TripleMAStrategy(short, mid, long)
 
 elif strategy_name == "均值回归":
+    # MeanReversionStrategy(ma_period, deviation)
     ma_period = st.sidebar.slider("均线周期", 10, 60, 20)
     deviation = st.sidebar.slider("偏离阈值(%)", 1, 20, 5) / 100
     strategy = MeanReversionStrategy(ma_period, deviation)
 
 elif strategy_name == "自适应趋势":
+    # AdaptiveTrendStrategy(base_period)
     base_period = st.sidebar.slider("基础周期", 10, 40, 20)
     strategy = AdaptiveTrendStrategy(base_period)
 
 # ===== 指标类 =====
 elif strategy_name == "MACD金叉死叉":
+    # MACDStrategy(fast, slow, signal)
     fast = st.sidebar.slider("快线", 5, 20, 12)
     slow = st.sidebar.slider("慢线", 15, 40, 26)
     signal = st.sidebar.slider("信号线", 5, 15, 9)
     strategy = MACDStrategy(fast, slow, signal)
 
 elif strategy_name == "MACD背离":
+    # MACDDivergenceStrategy(fast, slow, signal, lookback)
     fast = st.sidebar.slider("快线", 5, 20, 12)
     slow = st.sidebar.slider("慢线", 15, 40, 26)
     signal = st.sidebar.slider("信号线", 5, 15, 9)
-    strategy = MACDDivergenceStrategy(fast, slow, signal)
+    lookback = st.sidebar.slider("回看周期", 10, 40, 20)
+    strategy = MACDDivergenceStrategy(fast, slow, signal, lookback)
 
 elif strategy_name == "KDJ超买超卖":
+    # KDJStrategy(n, m1, m2, oversold, overbought)
     n = st.sidebar.slider("KDJ周期", 5, 20, 9)
     oversold = st.sidebar.slider("超卖线", 10, 40, 20)
     overbought = st.sidebar.slider("超买线", 60, 90, 80)
     strategy = KDJStrategy(n, oversold=oversold, overbought=overbought)
 
 elif strategy_name == "KDJ金叉":
+    # KDJGoldenStrategy(n, m1, m2)
     n = st.sidebar.slider("KDJ周期", 5, 20, 9)
     strategy = KDJGoldenStrategy(n)
 
 elif strategy_name == "RSI动量":
+    # RSIMomentumStrategy(period, oversold, overbought)
     period = st.sidebar.slider("RSI周期", 5, 30, 14)
     oversold = st.sidebar.slider("超卖阈值", 10, 40, 30)
     overbought = st.sidebar.slider("超买阈值", 60, 90, 70)
     strategy = RSIMomentumStrategy(period, oversold, overbought)
 
 elif strategy_name == "布林带突破":
+    # BollingerBreakoutStrategy(period, std_dev)
     period = st.sidebar.slider("周期", 10, 30, 20)
     std_dev = st.sidebar.slider("标准差倍数", 1.0, 3.0, 2.0, 0.1)
     strategy = BollingerBreakoutStrategy(period, std_dev)
 
 # ===== 动量类 =====
 elif strategy_name == "动量策略":
-    period = st.sidebar.slider("动量周期", 5, 30, 10)
-    strategy = MomentumStrategy(period)
+    # MomentumStrategy(lookback, buy_threshold, sell_threshold, hold_days)
+    lookback = st.sidebar.slider("回看周期", 5, 30, 10)
+    buy_threshold = st.sidebar.slider("买入阈值(%)", 1, 20, 5) / 100
+    sell_threshold = st.sidebar.slider("卖出阈值(%)", -20, -1, -3) / 100
+    hold_days = st.sidebar.slider("持仓天数", 1, 20, 5)
+    strategy = MomentumStrategy(lookback, buy_threshold, sell_threshold, hold_days)
 
 elif strategy_name == "价值动量":
+    # ValueMomentumStrategy(momentum_period, ma_period)
     momentum_period = st.sidebar.slider("动量周期", 10, 40, 20)
-    strategy = ValueMomentumStrategy(momentum_period)
+    ma_period = st.sidebar.slider("均线周期", 10, 60, 20)
+    strategy = ValueMomentumStrategy(momentum_period, ma_period)
 
 elif strategy_name == "质量动量":
+    # QualityMomentumStrategy(lookback)
     lookback = st.sidebar.slider("回看周期", 20, 120, 60)
     strategy = QualityMomentumStrategy(lookback)
 
 elif strategy_name == "多因子策略":
+    # MultiFactorStrategy(score_threshold)
     score_threshold = st.sidebar.slider("评分阈值", 0.3, 0.8, 0.6, 0.05)
     strategy = MultiFactorStrategy(score_threshold)
 
 elif strategy_name == "轮动策略":
+    # RotationStrategy(momentum_period, hold_period)
     momentum_period = st.sidebar.slider("动量周期", 10, 40, 20)
     hold_period = st.sidebar.slider("持仓周期", 5, 40, 20)
     strategy = RotationStrategy(momentum_period, hold_period)
 
 # ===== 趋势类 =====
 elif strategy_name == "通道突破":
+    # BreakoutStrategy(entry_period, exit_period)
     entry_period = st.sidebar.slider("入场周期", 10, 60, 20)
     exit_period = st.sidebar.slider("出场周期", 5, 30, 10)
     strategy = BreakoutStrategy(entry_period, exit_period)
 
 elif strategy_name == "趋势跟踪":
-    fast_period = st.sidebar.slider("快速周期", 5, 30, 10)
-    slow_period = st.sidebar.slider("慢速周期", 20, 60, 30)
-    atr_period = st.sidebar.slider("ATR周期", 10, 30, 14)
-    strategy = TrendFollowingStrategy(fast_period, slow_period, atr_period)
+    # TrendFollowingStrategy(entry_period, exit_period, atr_stop)
+    entry_period = st.sidebar.slider("入场周期", 10, 40, 20)
+    exit_period = st.sidebar.slider("出场周期", 5, 20, 10)
+    atr_stop = st.sidebar.slider("ATR止损倍数", 1.0, 4.0, 2.0, 0.5)
+    strategy = TrendFollowingStrategy(entry_period, exit_period, atr_stop)
 
 elif strategy_name == "DualThrust":
-    n = st.sidebar.slider("回看周期", 2, 10, 4)
+    # DualThrustStrategy(lookback, k1, k2)
+    lookback = st.sidebar.slider("回看周期", 2, 10, 4)
     k1 = st.sidebar.slider("上轨系数", 0.3, 1.0, 0.5, 0.05)
     k2 = st.sidebar.slider("下轨系数", 0.3, 1.0, 0.5, 0.05)
-    strategy = DualThrustStrategy(n, k1, k2)
+    strategy = DualThrustStrategy(lookback, k1, k2)
 
 elif strategy_name == "突破回踩":
+    # BreakoutRetestStrategy(breakout_period, retest_days)
     breakout_period = st.sidebar.slider("突破周期", 10, 40, 20)
-    confirm_period = st.sidebar.slider("确认周期", 3, 10, 5)
-    strategy = BreakoutRetestStrategy(breakout_period, confirm_period)
+    retest_days = st.sidebar.slider("回踩天数", 1, 10, 3)
+    strategy = BreakoutRetestStrategy(breakout_period, retest_days)
 
 # ===== 量价类 =====
 elif strategy_name == "量价突破":
+    # VolumeBreakthroughStrategy(price_period, volume_mult)
     price_period = st.sidebar.slider("价格周期", 10, 40, 20)
-    volume_ratio = st.sidebar.slider("量比阈值", 1.0, 3.0, 1.5, 0.1)
-    strategy = VolumeBreakthroughStrategy(price_period, volume_ratio)
+    volume_mult = st.sidebar.slider("量比阈值", 1.0, 3.0, 1.5, 0.1)
+    strategy = VolumeBreakthroughStrategy(price_period, volume_mult)
 
 elif strategy_name == "OBV能量潮":
-    ma_period = st.sidebar.slider("OBV均线周期", 10, 40, 20)
-    strategy = OBVStrategy(ma_period)
+    # OBVStrategy(period)
+    period = st.sidebar.slider("OBV周期", 10, 40, 20)
+    strategy = OBVStrategy(period)
 
 elif strategy_name == "缩量企稳":
-    volume_period = st.sidebar.slider("量能周期", 5, 20, 10)
-    price_period = st.sidebar.slider("价格周期", 5, 20, 10)
-    strategy = ShrinkingVolumeStrategy(volume_period, price_period)
+    # ShrinkingVolumeStrategy(trend_period, pullback_days)
+    trend_period = st.sidebar.slider("趋势周期", 10, 40, 20)
+    pullback_days = st.sidebar.slider("回调天数", 3, 15, 5)
+    strategy = ShrinkingVolumeStrategy(trend_period, pullback_days)
 
 elif strategy_name == "放量突破":
-    period = st.sidebar.slider("突破周期", 10, 40, 20)
-    vol_mult = st.sidebar.slider("量能倍数", 1.2, 3.0, 1.5, 0.1)
-    strategy = VolumeBreakoutStrategy(period, vol_mult)
+    # VolumeBreakoutStrategy(price_period, volume_mult, ma_period)
+    price_period = st.sidebar.slider("价格周期", 10, 40, 20)
+    volume_mult = st.sidebar.slider("量能倍数", 1.2, 3.0, 1.5, 0.1)
+    ma_period = st.sidebar.slider("均线周期", 5, 30, 10)
+    strategy = VolumeBreakoutStrategy(price_period, volume_mult, ma_period)
 
 # ===== 形态类 =====
 elif strategy_name == "K线形态":
+    # CandlePatternStrategy()
     strategy = CandlePatternStrategy()
 
 elif strategy_name == "双底形态":
+    # DoubleBottomStrategy(lookback, tolerance)
     lookback = st.sidebar.slider("回看周期", 20, 80, 40)
-    threshold = st.sidebar.slider("价格阈值(%)", 1, 10, 3) / 100
-    strategy = DoubleBottomStrategy(lookback, threshold)
+    tolerance = st.sidebar.slider("价格容差(%)", 1, 10, 3) / 100
+    strategy = DoubleBottomStrategy(lookback, tolerance)
 
 elif strategy_name == "网格策略":
+    # GridStrategy(grid_num, grid_pct)
     grid_num = st.sidebar.slider("网格数量", 3, 20, 10)
-    grid_size = st.sidebar.slider("网格间距(%)", 1, 10, 3) / 100
-    strategy = GridStrategy(grid_num, grid_size)
+    grid_pct = st.sidebar.slider("网格间距(%)", 1, 10, 3) / 100
+    strategy = GridStrategy(grid_num, grid_pct)
 
 elif strategy_name == "动态网格":
-    grid_num = st.sidebar.slider("网格数量", 3, 20, 10)
+    # DynamicGridStrategy(atr_period, atr_mult)
+    atr_period = st.sidebar.slider("ATR周期", 10, 30, 14)
     atr_mult = st.sidebar.slider("ATR倍数", 0.5, 3.0, 1.0, 0.1)
-    strategy = DynamicGridStrategy(grid_num, atr_mult)
+    strategy = DynamicGridStrategy(atr_period, atr_mult)
 
 # ===== 组合类 =====
 elif strategy_name == "趋势过滤策略":
+    # FilteredStrategy(base_strategy, trend_period, volatility_filter)
     st.sidebar.write("基于双均线，趋势过滤")
     short_period = st.sidebar.slider("短期均线", 3, 20, 5)
     long_period = st.sidebar.slider("长期均线", 10, 60, 20)
@@ -279,20 +313,18 @@ elif strategy_name == "趋势过滤策略":
     strategy = FilteredStrategy(base_strategy, trend_period=trend_period)
 
 elif strategy_name == "移动止损策略":
-    st.sidebar.write("基于双均线，移动止损")
-    short_period = st.sidebar.slider("短期均线", 3, 20, 5)
-    long_period = st.sidebar.slider("长期均线", 10, 60, 20)
+    # TrailingStopStrategy(entry_period, trail_pct)
+    st.sidebar.write("趋势突破+移动止损")
+    entry_period = st.sidebar.slider("入场周期", 10, 40, 20)
     trail_pct = st.sidebar.slider("移动止损(%)", 3, 15, 8) / 100
-    base_strategy = MACrossStrategy(short_period, long_period)
-    strategy = TrailingStopStrategy(base_strategy, trail_pct=trail_pct)
+    strategy = TrailingStopStrategy(entry_period, trail_pct)
 
 elif strategy_name == "ATR止损策略":
-    st.sidebar.write("基于MACD，ATR止损")
-    fast = st.sidebar.slider("MACD快线", 5, 20, 12)
-    slow = st.sidebar.slider("MACD慢线", 15, 40, 26)
+    # ATRStopStrategy(entry_period, atr_mult)
+    st.sidebar.write("趋势突破+ATR止损")
+    entry_period = st.sidebar.slider("入场周期", 10, 40, 20)
     atr_mult = st.sidebar.slider("ATR倍数", 1.0, 4.0, 2.0, 0.5)
-    base_strategy = MACDStrategy(fast, slow, 9)
-    strategy = ATRStopStrategy(base_strategy, atr_mult=atr_mult)
+    strategy = ATRStopStrategy(entry_period, atr_mult)
 
 # 运行回测按钮
 if st.sidebar.button("🚀 运行回测", type="primary"):
@@ -393,6 +425,8 @@ if st.sidebar.button("🚀 运行回测", type="primary"):
                 
         except Exception as e:
             st.error(f"回测失败: {str(e)}")
+            import traceback
+            st.code(traceback.format_exc())
 
 # 页面底部
 st.divider()
@@ -406,8 +440,7 @@ with st.expander("📊 实时行情查询"):
             with st.spinner("获取数据（网络不稳定时可能需要重试）..."):
                 df = DataFetcher.get_stock_daily(
                     query_symbol, 
-                    (datetime.now() - timedelta(days=30)).strftime("%Y%m%d"),
-                    max_retries=5
+                    (datetime.now() - timedelta(days=30)).strftime("%Y%m%d")
                 )
                 
                 st.write(f"**{query_symbol} 最近行情**")
@@ -436,7 +469,7 @@ with st.expander("📖 使用说明"):
     | 双均线交叉 | 短期均线上穿长期均线买入，下穿卖出 |
     | 三均线策略 | 三条均线多头排列时买入 |
     | 均值回归 | 价格偏离均线过多时反向操作 |
-    | 自适应趋势 | 根据市场波动自适应调整均线 |
+    | 自适应趋势 | 根据市场波动自适应调整 |
     
     #### 📈 指标类
     | 策略 | 说明 |
@@ -461,7 +494,7 @@ with st.expander("📖 使用说明"):
     | 策略 | 说明 |
     |------|------|
     | 通道突破 | 突破N日高点买入，跌破N日低点卖出 |
-    | 趋势跟踪 | 跟随趋势，ATR控制仓位 |
+    | 趋势跟踪 | 跟随趋势，ATR止损 |
     | DualThrust | 经典日内突破策略 |
     | 突破回踩 | 突破后等待回踩确认买入 |
     
@@ -485,8 +518,8 @@ with st.expander("📖 使用说明"):
     | 策略 | 说明 |
     |------|------|
     | 趋势过滤策略 | 只在大趋势向上时交易 |
-    | 移动止损策略 | 基础策略+移动止损保护 |
-    | ATR止损策略 | 基础策略+ATR动态止损 |
+    | 移动止损策略 | 趋势突破+移动止损保护 |
+    | ATR止损策略 | 趋势突破+ATR动态止损 |
     
     ### 指标说明
     
@@ -499,6 +532,6 @@ with st.expander("📖 使用说明"):
 
 # 版本信息
 st.sidebar.divider()
-st.sidebar.caption("A股量化回测平台 v2.0")
-st.sidebar.caption(f"内置 {30}+ 策略")
+st.sidebar.caption("A股量化回测平台 v2.1")
+st.sidebar.caption("内置 30+ 策略")
 st.sidebar.caption("数据来源: AKShare")
