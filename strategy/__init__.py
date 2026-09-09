@@ -27,6 +27,12 @@ from .pattern import CandlePatternStrategy, DoubleBottomStrategy, BreakoutRetest
 # 高级策略 - 组合策略
 from .composite import CompositeStrategy, ConfirmationStrategy, FilteredStrategy, RotationStrategy
 
+# 公式策略（类似通达信）
+try:
+    from .formula import FormulaStrategy, CustomIndicator, create_formula_strategy, list_formula_strategies, FORMULA_LIBRARY, StockScanner, SCAN_PRESETS, create_scanner_from_preset
+except ImportError:
+    pass
+
 __all__ = [
     # 基类
     'BaseStrategy',
@@ -66,4 +72,8 @@ __all__ = [
     
     # 组合策略
     'CompositeStrategy', 'ConfirmationStrategy', 'FilteredStrategy', 'RotationStrategy',
+    
+    # 公式策略
+    'FormulaStrategy', 'CustomIndicator', 'create_formula_strategy', 'list_formula_strategies',
+    'FORMULA_LIBRARY', 'StockScanner', 'SCAN_PRESETS', 'create_scanner_from_preset',
 ]

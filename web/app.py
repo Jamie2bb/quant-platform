@@ -45,6 +45,24 @@ st.set_page_config(
     layout="wide"
 )
 
+# 导入持仓页面（使用相对导入）
+try:
+    from web.portfolio_page import render_portfolio_page
+except ImportError:
+    from portfolio_page import render_portfolio_page
+
+# 侧边栏 - 页面选择
+page_mode = st.sidebar.radio(
+    "选择功能",
+    ["📈 策略回测", "💼 我的持仓"],
+    index=0
+)
+
+# 如果选择"我的持仓"，渲染持仓页面
+if page_mode == "💼 我的持仓":
+    render_portfolio_page()
+    st.stop()
+
 # 标题
 st.title("📈 A股量化回测平台")
 
@@ -532,6 +550,7 @@ with st.expander("📖 使用说明"):
 
 # 版本信息
 st.sidebar.divider()
-st.sidebar.caption("A股量化回测平台 v2.1")
-st.sidebar.caption("内置 30+ 策略")
+st.sidebar.caption("A股量化回测平台 v2.3")
+st.sidebar.caption("内置 36+ 策略 + 22 公式策略")
+st.sidebar.caption("🆕 新增：公式策略系统、选股扫描")
 st.sidebar.caption("数据来源: AKShare")

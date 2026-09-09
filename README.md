@@ -1,6 +1,143 @@
-# A股量化回测平台 v2.1
+# A股量化回测平台 v2.3
 
-基于 AKShare 的完整量化交易回测框架，参考 **Backtrader**、**VnPy**、**Qlib** 三大顶级开源项目设计。
+基于 AKShare 的完整量化交易回测框架，参考 **Backtrader**、**VnPy**、**Qlib**、**通达信/同花顺/聚宽** 设计。
+
+> 🎯 **核心特色**：支持类似通达信的公式语法，让量化交易更简单！
+
+## 🆕 v2.3 新功能
+
+### 1. 专业技术指标库 (60+指标)
+参考通达信/同花顺指标体系，新增文件 `utils/indicators_pro.py`：
+- **均线系列**: MA, EMA, SMA, WMA, DEMA, TEMA, KAMA, ALMA
+- **趋势指标**: MACD, DMI, SAR, SuperTrend, Ichimoku云图
+- **震荡指标**: RSI, KDJ, CCI, Williams %R, ROC, TRIX, UO
+- **波动率**: ATR, 布林带, KC通道, DC通道
+- **成交量**: OBV, VWAP, MFI, CMF, EMV, VPT
+- **基础函数**: REF, HHV, LLV, CROSS, COUNT, EVERY, EXIST
+
+### 2. 公式策略系统 (类似通达信)
+用简单公式定义买卖条件，新增文件 `strategy/formula.py`：
+```python
+from strategy.formula import FormulaStrategy
+
+# 双均线金叉
+strategy = FormulaStrategy(
+    buy_formula="CROSS(MA(df['close'],5), MA(df['close'],20))",
+    sell_formula="CROSS(MA(df['close'],20), MA(df['close'],5))",
+    name="双均线金叉"
+)
+```
+
+### 3. 预设公式库 (20+选股公式)
+```python
+from strategy.formula import create_formula_strategy, list_formula_strategies
+
+# 查看所有预设
+strategies = list_formula_strategies()
+
+# 使用预设
+strategy = create_formula_strategy("MACD金叉")
+strategy = create_formula_strategy("海龟突破")
+strategy = create_formula_strategy("RSI超卖")
+```
+
+### 4. 选股扫描器
+```python
+from strategy.formula import StockScanner, create_scanner_from_preset
+
+# 使用预设
+scanner = create_scanner_from_preset("强势股")
+
+# 或自定义条件
+scanner = StockScanner()
+scanner.add_condition("站上20日线", "df['close'] > MA(df['close'],20)")
+scanner.add_condition("MACD金叉", "CROSS(DIF, DEA)")
+
+results = scanner.scan(stock_list)
+```
+
+### 5. Web界面新增功能
+- **公式策略**: 在网页上编写和回测公式策略
+- **选股扫描**: 批量扫描符合条件的股票
+
+---
+
+## 🆕 v2.2 我的持仓分析模块
+
+针对个人投资者的实用工具，帮助你管理持仓、控制风险、验证想法。
+
+### 快速开始
+
+**方式1：双击运行**
+```
+双击 "我的持仓分析.bat"
+```
+
+**方式2：Python 代码**
+```python
+from my_portfolio.main import *
+
+# 1. 监控持仓（检查止损止盈）
+monitor_my_holdings()
+
+# 2. 详细技术分析
+analyze_my_holdings()
+
+# 3. 分析单只股票
+analyze_stock("600519", "贵州茅台")
+
+# 4. 设置成本价（用于计算盈亏）
+set_cost("301005", 25.5)
+
+# 5. 计算建仓数量
+calc_buy_position(25.0, 23.0)  # 买入价25，止损价23
+
+# 6. 回测验证策略
+backtest_holding("600519", "贵州茅台")
+
+# 7. 优化均线参数
+optimize_ma("600519")
+```
+
+### 持仓配置
+
+编辑 `d:\Python\持仓配置.json`：
+```json
+{
+  "holdings": [
+    {"code": "301005", "market": "0", "name": "超捷股份"},
+    {"code": "300085", "market": "0", "name": "银之杰"},
+    {"code": "600589", "market": "1", "name": "大位科技"}
+  ]
+}
+```
+
+### 功能说明
+
+| 功能 | 说明 |
+|------|------|
+| 持仓监控 | 检查止损/止盈/均线破位/MACD金叉死叉/RSI超买超卖 |
+| 技术分析 | 均线趋势、MACD、RSI、KDJ、布林带、成交量分析 |
+| 仓位计算 | 根据止损价和风险控制计算建仓数量 |
+| 策略回测 | 测试均线/MACD/KDJ等策略的历史表现 |
+| 参数优化 | 寻找最佳均线参数组合 |
+
+### 规则配置
+
+编辑 `my_portfolio/config.py`：
+```python
+# 止损止盈规则
+STOP_LOSS_PCT = 8       # 亏损8%提醒
+TAKE_PROFIT_PCT = 20    # 盈利20%提醒
+TRAILING_STOP_PCT = 5   # 从最高点回撤5%提醒
+
+# 仓位管理
+TOTAL_CAPITAL = 100000  # 总资金
+MAX_SINGLE_PCT = 0.3    # 单只最大30%
+MAX_LOSS_PER_TRADE = 0.02  # 单笔最大亏2%
+```
+
+---
 
 ## 功能模块
 
