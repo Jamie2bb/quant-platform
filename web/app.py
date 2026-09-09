@@ -148,9 +148,8 @@ elif strategy_name == "均值回归":
     strategy = MeanReversionStrategy(ma_period, deviation)
 
 elif strategy_name == "自适应趋势":
-    fast_period = st.sidebar.slider("快速周期", 5, 20, 10)
-    slow_period = st.sidebar.slider("慢速周期", 20, 60, 30)
-    strategy = AdaptiveTrendStrategy(fast_period, slow_period)
+    base_period = st.sidebar.slider("基础周期", 10, 40, 20)
+    strategy = AdaptiveTrendStrategy(base_period)
 
 # ===== 指标类 =====
 elif strategy_name == "MACD金叉死叉":
